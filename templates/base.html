@@ -280,7 +280,9 @@
 <body>
     <nav class="navbar">
         <div class="nav-content">
-            <a href="/" class="nav-brand">ALAS</a>
+            <a href="/" class="nav-brand">
+                <img src="{{ url_for('static', filename='img/awards/Alas_Logo.jpg') }}" alt="ALAS Logo" class="nav-logo">
+            </a>
             <div class="nav-links">
                 <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Home</a>
                 <a href="/menu" {% if request.endpoint == 'menu' %}class="active"{% endif %}>Speisekarte</a>
