@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Galerie - Restaurant ALAS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Unsere Galerie</h1>
+        <p>Eindrücke aus unserem Restaurant</p>
+    </div>
+</div>
+
+<div class="gallery-section">
+    <div class="container">
+        <div class="gallery-grid">
+            {% for image in images %}
+            <div class="gallery-item">
+                <a href="{{ url_for('static', filename=image.image_path) }}" class="gallery-lightbox">
+                    <div class="gallery-image">
+                        <img src="{{ url_for('static', filename=image.image_path) }}" 
+                             alt="{{ image.title }}" 
+                             loading="lazy"
+                             onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'"
+                        >
+                    </div>
+                    <div class="gallery-info">
+                        <h3>{{ image.title }}</h3>
+                        {% if image.description %}
+                        <p>{{ image.description }}</p>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+            {% else %}
+            <div class="no-images">
+                <p>Noch keine Bilder in der Galerie vorhanden.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        new SimpleLightbox('.gallery-lightbox', {
+            captionsData: 'alt',
+            captionDelay: 250,
+            animationSpeed: 250,
+            fadeSpeed: 300,
+            widthRatio: 0.8,
+            heightRatio: 0.8
+        });
+    });
+</script>
+{% endblock %}

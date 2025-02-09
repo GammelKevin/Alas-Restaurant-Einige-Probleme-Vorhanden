@@ -1,0 +1,103 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Galerie verwalten</h1>
+        <a href="{{ url_for('admin_gallery_add') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Neues Bild hinzufügen
+        </a>
+    </div>
+
+    <div class="row">
+        {% for image in images %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="position-relative">
+                    <img src="{{ url_for('static', filename=image.image_path) }}" 
+                         class="card-img-top"
+                         alt="{{ image.title }}"
+                         style="height: 200px; object-fit: cover;"
+                         onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title text-truncate" title="{{ image.title }}">{{ image.title }}</h5>
+                    {% if image.description %}
+                    <p class="card-text small text-muted" style="max-height: 4.5em; overflow: hidden;">
+                        {{ image.description }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#imageModal{{ image.id }}">
+                            <i class="bi bi-eye me-1"></i>Details
+                        </button>
+                        <a href="{{ url_for('admin_gallery_delete', id=image.id) }}" 
+                           class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('Sind Sie sicher, dass Sie dieses Bild löschen möchten?')">
+                            <i class="bi bi-trash me-1"></i>Löschen
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for image details -->
+        <div class="modal fade" id="imageModal{{ image.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ image.title }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <img src="{{ url_for('static', filename=image.image_path) }}" 
+                                     class="img-fluid rounded"
+                                     alt="{{ image.title }}"
+                                     onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Bilddetails</h6>
+                                <dl class="row">
+                                    <dt class="col-sm-4">Titel</dt>
+                                    <dd class="col-sm-8">{{ image.title }}</dd>
+                                    
+                                    {% if image.description %}
+                                    <dt class="col-sm-4">Beschreibung</dt>
+                                    <dd class="col-sm-8">{{ image.description }}</dd>
+                                    {% endif %}
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="{{ url_for('admin_gallery_delete', id=image.id) }}" 
+                           class="btn btn-danger"
+                           onclick="return confirm('Sind Sie sicher, dass Sie dieses Bild löschen möchten?')">
+                            <i class="bi bi-trash me-1"></i>Bild löschen
+                        </a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center py-5 bg-light rounded">
+                <i class="bi bi-images display-4 text-muted mb-3"></i>
+                <h3 class="h4 text-muted">Keine Bilder vorhanden</h3>
+                <p class="text-muted mb-4">Fügen Sie Ihre ersten Bilder zur Galerie hinzu.</p>
+                <a href="{{ url_for('admin_gallery_add') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Erstes Bild hinzufügen
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
