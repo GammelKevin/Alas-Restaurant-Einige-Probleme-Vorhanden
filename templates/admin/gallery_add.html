@@ -1,135 +1,138 @@
-{% extends "admin/base.html" %}
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Bild hinzufügen{% endblock %}
 
 {% block content %}
-<div class="admin-header">
-    <h1>Neues Bild hinzufügen</h1>
-    <a href="{{ url_for('admin_gallery') }}" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Zurück zur Galerie
-    </a>
-</div>
+<div class="container">
+    <h2>Neues Bild hinzufügen</h2>
+    <div class="admin-header">
+        <a href="{{ url_for('admin_gallery') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Zurück zur Galerie
+        </a>
+    </div>
 
-<div class="admin-content">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" class="admin-form">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="mb-4">
-                            <label for="title" class="form-label">Titel</label>
-                            <input type="text" id="title" name="title" required class="form-control form-control-lg" 
-                                   placeholder="Geben Sie einen aussagekräftigen Titel ein"
-                                   maxlength="100">
-                            <div class="form-text">Maximal 100 Zeichen</div>
-                        </div>
+    <div class="admin-content">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" class="admin-form">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-4">
+                                <label for="title" class="form-label">Titel</label>
+                                <input type="text" id="title" name="title" required class="form-control form-control-lg" 
+                                       placeholder="Geben Sie einen aussagekräftigen Titel ein"
+                                       maxlength="100">
+                                <div class="form-text">Maximal 100 Zeichen</div>
+                            </div>
 
-                        <div class="mb-4">
-                            <label for="description" class="form-label">Beschreibung (optional)</label>
-                            <textarea id="description" name="description" class="form-control" rows="4"
-                                    placeholder="Fügen Sie eine optionale Beschreibung hinzu"
-                                    maxlength="500"></textarea>
-                            <div class="form-text">Maximal 500 Zeichen</div>
-                        </div>
+                            <div class="mb-4">
+                                <label for="description" class="form-label">Beschreibung (optional)</label>
+                                <textarea id="description" name="description" class="form-control" rows="4"
+                                        placeholder="Fügen Sie eine optionale Beschreibung hinzu"
+                                        maxlength="500"></textarea>
+                                <div class="form-text">Maximal 500 Zeichen</div>
+                            </div>
 
-                        <div class="mb-4">
-                            <label for="image" class="form-label">Bild auswählen</label>
-                            <input type="file" id="image" name="image" required class="form-control" 
-                                   accept="image/*" onchange="previewImage(this);">
-                            <div class="form-text text-muted">
-                                <i class="bi bi-info-circle"></i> Empfohlene Bildgröße: 800x600 Pixel
+                            <div class="mb-4">
+                                <label for="image" class="form-label">Bild auswählen</label>
+                                <input type="file" id="image" name="image" required class="form-control" 
+                                       accept="image/*" onchange="previewImage(this);">
+                                <div class="form-text text-muted">
+                                    <i class="bi bi-info-circle"></i> Empfohlene Bildgröße: 800x600 Pixel
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="image-preview-container mb-4">
-                            <div id="imagePreview" class="image-preview">
-                                <div class="no-image">
-                                    <i class="bi bi-image"></i>
-                                    <p>Bildvorschau</p>
+                        <div class="col-md-4">
+                            <div class="image-preview-container mb-4">
+                                <div id="imagePreview" class="image-preview">
+                                    <div class="no-image">
+                                        <i class="bi bi-image"></i>
+                                        <p>Bildvorschau</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-plus-circle"></i> Bild hinzufügen
-                    </button>
-                </div>
-            </form>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle"></i> Bild hinzufügen
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<style>
-    .image-preview-container {
-        background: #f8f9fa;
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    
-    .image-preview {
-        width: 100%;
-        padding-top: 75%;
-        position: relative;
-        background: #fff;
-        border: 2px dashed #dee2e6;
-        border-radius: 8px;
-    }
-    
-    .no-image {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        color: #adb5bd;
-    }
-    
-    .no-image i {
-        font-size: 3rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .preview-img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .form-actions {
-        margin-top: 2rem;
-        padding-top: 1rem;
-        border-top: 1px solid #dee2e6;
-    }
-</style>
-
-<script>
-function previewImage(input) {
-    const preview = document.getElementById('imagePreview');
-    preview.innerHTML = '';
-    
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.classList.add('preview-img');
-            preview.appendChild(img);
+    <style>
+        .image-preview-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
         }
         
-        reader.readAsDataURL(input.files[0]);
-    } else {
-        preview.innerHTML = `
-            <div class="no-image">
-                <i class="bi bi-image"></i>
-                <p>Bildvorschau</p>
-            </div>`;
+        .image-preview {
+            width: 100%;
+            padding-top: 75%;
+            position: relative;
+            background: #fff;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+        }
+        
+        .no-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #adb5bd;
+        }
+        
+        .no-image i {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .preview-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .form-actions {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+
+    <script>
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('preview-img');
+                preview.appendChild(img);
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.innerHTML = `
+                <div class="no-image">
+                    <i class="bi bi-image"></i>
+                    <p>Bildvorschau</p>
+                </div>`;
+        }
     }
-}
-</script>
+    </script>
 {% endblock %}

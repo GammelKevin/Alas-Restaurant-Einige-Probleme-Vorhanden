@@ -32,9 +32,10 @@ body {
 }
 
 .nav-logo {
-    height: 50px;
+    height: 80px;
     width: auto;
     display: block;
+    margin: 5px 0;
 }
 
 .nav-brand {
