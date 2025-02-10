@@ -7,6 +7,9 @@ import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from PIL import Image
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, BooleanField, SelectField, IntegerField, FloatField, FileField, TextAreaField
+from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, InputRequired
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dein-geheimer-schluessel'
@@ -92,6 +95,38 @@ class GalleryImage(db.Model):
     image_path = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     order = db.Column(db.Integer, default=0)
+
+class OpeningHoursForm(FlaskForm):
+    monday_hours = StringField('Montag')
+    tuesday_hours = StringField('Dienstag')
+    wednesday_hours = StringField('Mittwoch')
+    thursday_hours = StringField('Donnerstag')
+    friday_hours = StringField('Freitag')
+    saturday_hours = StringField('Samstag')
+    sunday_hours = StringField('Sonntag')
+
+class MenuItemForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    description = TextAreaField('Beschreibung', validators=[DataRequired()])
+    price = FloatField('Preis', validators=[DataRequired()])
+    category = SelectField('Kategorie', coerce=int)
+    image = FileField('Bild', validators=[FileAllowed(['jpg', 'png'], 'Nur Bilder erlaubt')])
+    vegetarian = BooleanField('Vegetarisch')
+    vegan = BooleanField('Vegan')
+    spicy = BooleanField('Scharf')
+    gluten_free = BooleanField('Glutenfrei')
+    lactose_free = BooleanField('Laktosefrei')
+    kid_friendly = BooleanField('Kinderfreundlich')
+    alcohol_free = BooleanField('Alkoholfrei')
+    contains_alcohol = BooleanField('Enthält Alkohol')
+    homemade = BooleanField('Hausgemacht')
+    sugar_free = BooleanField('Zuckerfrei')
+    recommended = BooleanField('Empfohlen')
+
+class GalleryImageForm(FlaskForm):
+    title = StringField('Titel', validators=[DataRequired()])
+    description = TextAreaField('Beschreibung', validators=[DataRequired()])
+    image = FileField('Bild', validators=[FileAllowed(['jpg', 'png'], 'Nur Bilder erlaubt')])
 
 def init_db():
     db.create_all()
