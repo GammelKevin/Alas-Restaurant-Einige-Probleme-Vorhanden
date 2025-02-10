@@ -47,7 +47,15 @@
                                 Galerie
                             </a>
                         </li>
-                        <li class="nav-item mt-4">
+                    </ul>
+                    <ul class="nav flex-column mt-4">
+                        <li class="nav-item">
+                            <a href="{{ url_for('index') }}" class="nav-link text-light">
+                                <i class="bi bi-arrow-left-circle"></i>
+                                Zurück zur Website
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="{{ url_for('logout') }}" class="nav-link text-danger">
                                 <i class="bi bi-box-arrow-right"></i>
                                 Ausloggen
@@ -60,7 +68,15 @@
             <!-- Main content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1>{% block header %}{% endblock %}</h1>
+                    <h1 class="h2">{% block header %}{% endblock %}</h1>
+                    {% if request.endpoint != 'admin' %}
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="{{ url_for('admin') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Zurück zum Dashboard
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}

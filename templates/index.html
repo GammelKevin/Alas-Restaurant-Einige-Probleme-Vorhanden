@@ -20,10 +20,13 @@
 
     <!-- Hero Section -->
     <section class="hero">
+        <div class="hero-image">
+            <img src="{{ url_for('static', filename='images/header/home-header.jpg') }}" alt="Restaurant ALAS - Griechische Spezialitäten">
+        </div>
         <div class="hero-content">
-            <h1 class="hero-title">Alas</h1>
-            <p class="hero-subtitle">Griechische Spezialitäten in Moos</p>
-            <a href="{{ url_for('menu') }}" class="cta-button">Speisekarte ansehen</a>
+            <h1>Willkommen bei ALAS</h1>
+            <p>Authentische griechische Küche in gemütlicher Atmosphäre</p>
+            <a href="#opening-hours" class="btn btn-primary">Öffnungszeiten</a>
         </div>
     </section>
 

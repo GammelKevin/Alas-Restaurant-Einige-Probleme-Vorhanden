@@ -81,6 +81,9 @@ class OpeningHours(db.Model):
     open_time_2 = db.Column(db.String(5))
     close_time_2 = db.Column(db.String(5))
     closed = db.Column(db.Boolean, default=False)
+    vacation_start = db.Column(db.String(10))  # Store as string in YYYY-MM-DD format
+    vacation_end = db.Column(db.String(10))    # Store as string in YYYY-MM-DD format
+    vacation_active = db.Column(db.Boolean, default=False)
 
 class GalleryImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -93,31 +96,7 @@ class GalleryImage(db.Model):
 def init_db():
     db.create_all()
     
-    # Check if admin user exists
-    if not User.query.filter_by(username='admin').first():
-        admin = User(username='admin')
-        admin.set_password('admin')
-        db.session.add(admin)
-    
-    # Check if categories exist
-    if not MenuCategory.query.first():
-        categories = [
-            {'name': 'vorspeisen', 'display_name': 'Vorspeisen', 'order': 1},
-            {'name': 'hauptspeisen', 'display_name': 'Hauptspeisen', 'order': 2},
-            {'name': 'desserts', 'display_name': 'Desserts', 'order': 3},
-            {'name': 'getraenke', 'display_name': 'Getränke', 'order': 4, 'is_drink_category': True}
-        ]
-        
-        for cat_data in categories:
-            category = MenuCategory(
-                name=cat_data['name'],
-                display_name=cat_data['display_name'],
-                order=cat_data['order'],
-                is_drink_category=cat_data.get('is_drink_category', False)
-            )
-            db.session.add(category)
-    
-    # Check if opening hours exist
+    # Initialize opening hours if not exists
     if not OpeningHours.query.first():
         days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
         for day in days:
@@ -127,11 +106,20 @@ def init_db():
                 close_time_1='14:30',
                 open_time_2='17:30',
                 close_time_2='22:00',
-                closed=(day in ['Samstag', 'Sonntag'])
+                closed=False,
+                vacation_active=False,
+                vacation_start=None,
+                vacation_end=None
             )
             db.session.add(hours)
-    
-    db.session.commit()
+        db.session.commit()
+
+    # Initialize admin user if not exists
+    if not User.query.filter_by(username='admin').first():
+        admin = User(username='admin')
+        admin.set_password('admin123')  # Change this password!
+        db.session.add(admin)
+        db.session.commit()
 
 @app.context_processor
 def inject_now():
@@ -432,31 +420,53 @@ def admin_hours():
 @app.route('/admin/hours/save', methods=['POST'])
 @login_required
 def admin_save_hours():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login'))
     try:
+        # Handle vacation dates first
+        vacation_active = 'vacation_active' in request.form
+        vacation_start = request.form.get('vacation_start')
+        vacation_end = request.form.get('vacation_end')
+
+        # Update all records with vacation info (we keep it in sync across all days)
+        if vacation_active and vacation_start and vacation_end:
+            OpeningHours.query.update({
+                'vacation_active': True,
+                'vacation_start': vacation_start,
+                'vacation_end': vacation_end
+            })
+        else:
+            OpeningHours.query.update({
+                'vacation_active': False,
+                'vacation_start': None,
+                'vacation_end': None
+            })
+
+        # Handle regular opening hours
         days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
-        
         for day in days:
             hours = OpeningHours.query.filter_by(day=day).first()
             if not hours:
-                hours = OpeningHours(day=day)
-                db.session.add(hours)
-            
-            closed = request.form.get(f'{day}_closed') == 'on'
+                continue
+
+            closed = day + '_closed' in request.form
             hours.closed = closed
-            
+
             if not closed:
-                hours.open_time_1 = request.form.get(f'{day}_open_1')
-                hours.close_time_1 = request.form.get(f'{day}_close_1')
-                hours.open_time_2 = request.form.get(f'{day}_open_2')
-                hours.close_time_2 = request.form.get(f'{day}_close_2')
-        
+                hours.open_time_1 = request.form.get(day + '_open_1', '')
+                hours.close_time_1 = request.form.get(day + '_close_1', '')
+                hours.open_time_2 = request.form.get(day + '_open_2', '')
+                hours.close_time_2 = request.form.get(day + '_close_2', '')
+            else:
+                hours.open_time_1 = ''
+                hours.close_time_1 = ''
+                hours.open_time_2 = ''
+                hours.close_time_2 = ''
+
         db.session.commit()
-        flash('Öffnungszeiten erfolgreich gespeichert', 'success')
+        flash('Öffnungszeiten wurden erfolgreich aktualisiert.', 'success')
     except Exception as e:
-        flash(f'Fehler beim Speichern der Öffnungszeiten: {str(e)}', 'error')
-    
+        db.session.rollback()
+        flash('Fehler beim Speichern der Öffnungszeiten: ' + str(e), 'error')
+
     return redirect(url_for('admin_hours'))
 
 @app.route('/menu')

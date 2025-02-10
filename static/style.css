@@ -67,46 +67,142 @@ body {
 
 /* Hero Section */
 .hero {
+    position: relative;
     height: 100vh;
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-                url('../static/images/hero.jpg') no-repeat center center;
-    background-size: cover;
+    min-height: 600px;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    color: #fff;
-    padding: 0 20px;
+}
+
+.hero-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.hero-image img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    max-width: none;
+    filter: brightness(0.7);
+}
+
+@media (min-aspect-ratio: 16/9) {
+    .hero-image img {
+        width: 100%;
+        height: auto;
+    }
+}
+
+@media (max-aspect-ratio: 16/9) {
+    .hero-image img {
+        width: auto;
+        height: 100%;
+    }
 }
 
 .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #fff;
+    padding: 2rem;
     max-width: 800px;
+    margin: 0 auto;
 }
 
-.hero-title {
+.hero-content h1 {
     font-size: 4rem;
-    font-weight: 700;
     margin-bottom: 1rem;
     font-family: 'Playfair Display', serif;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.hero-subtitle {
+.hero-content p {
     font-size: 1.5rem;
     margin-bottom: 2rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.cta-button {
-    display: inline-block;
-    padding: 1rem 2rem;
+.hero-content .btn {
+    font-size: 1.2rem;
+    padding: 1.2rem 3rem;
     background-color: #e19b4c;
-    color: #fff;
+    border: none;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    border-radius: 3px;
     text-decoration: none;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
 }
 
-.cta-button:hover {
-    background-color: #c88a3f;
+.hero-content .btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -75%;
+    z-index: 2;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,.3) 100%);
+    transform: skewX(-25deg);
+    transition: all 0.75s;
+}
+
+.hero-content .btn:hover {
+    background-color: #d18b3c;
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(225, 155, 76, 0.4);
+}
+
+.hero-content .btn:hover:before {
+    animation: shine 0.75s;
+}
+
+@keyframes shine {
+    100% {
+        left: 125%;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-content .btn {
+        font-size: 1rem;
+        padding: 1rem 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        height: 60vh;
+        min-height: 400px;
+    }
+
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-content p {
+        font-size: 1.2rem;
+    }
 }
 
 /* About Section */
@@ -731,5 +827,163 @@ body {
 
     .section-title h2 {
         font-size: 2rem;
+    }
+}
+
+/* Menu Section Styles */
+.menu-section {
+    margin-bottom: 3rem;
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.menu-section h2 {
+    color: #e19b4c;
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e19b4c;
+    position: relative;
+}
+
+.menu-section h2:after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background-color: #333;
+}
+
+.menu-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.menu-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.menu-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.menu-item-image {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    background: none;
+}
+
+.menu-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: none;
+    opacity: 1;
+    mix-blend-mode: normal;
+}
+
+.menu-item:hover .menu-item-image img {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}
+
+.menu-item .item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.menu-item .item-name {
+    font-size: 1.4rem;
+    color: #333;
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+}
+
+.menu-item .item-price {
+    font-size: 1.2rem;
+    color: #e19b4c;
+    font-weight: 600;
+}
+
+.menu-item .description {
+    color: #666;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.menu-item .item-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.menu-item .badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #e9ecef;
+}
+
+.menu-item .badge-vegetarian {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-color: #c8e6c9;
+}
+
+.menu-item .badge-vegan {
+    background-color: #f1f8e9;
+    color: #558b2f;
+    border-color: #dcedc8;
+}
+
+.menu-item .badge-spicy {
+    background-color: #ffebee;
+    color: #c62828;
+    border-color: #ffcdd2;
+}
+
+.menu-item .badge-gluten-free {
+    background-color: #fff3e0;
+    color: #ef6c00;
+    border-color: #ffe0b2;
+}
+
+@media (max-width: 768px) {
+    .menu-section {
+        padding: 1.5rem;
+    }
+
+    .menu-section h2 {
+        font-size: 1.8rem;
+    }
+
+    .menu-items {
+        grid-template-columns: 1fr;
+    }
+
+    .menu-item .item-name {
+        font-size: 1.2rem;
     }
 }

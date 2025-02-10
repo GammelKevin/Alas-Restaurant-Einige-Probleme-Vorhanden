@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-4 mb-4">
+    <div class="col-md-3 mb-4">
         <div class="card bg-primary text-white">
             <div class="card-body">
                 <h5 class="card-title">Speisekarte verwalten 🍽️</h5>
@@ -13,7 +13,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-4">
+    <div class="col-md-3 mb-4">
         <div class="card bg-success text-white">
             <div class="card-body">
                 <h5 class="card-title">Kategorien verwalten 📑</h5>
@@ -22,12 +22,21 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-4">
+    <div class="col-md-3 mb-4">
         <div class="card bg-info text-white">
             <div class="card-body">
                 <h5 class="card-title">Öffnungszeiten 🕒</h5>
                 <p class="card-text">Aktualisiere die Öffnungszeiten</p>
                 <a href="{{ url_for('admin_hours') }}" class="btn btn-light">Zu den Öffnungszeiten</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Galerie verwalten 📸</h5>
+                <p class="card-text">Füge neue Bilder hinzu oder bearbeite bestehende</p>
+                <a href="{{ url_for('admin_gallery') }}" class="btn btn-light">Zur Galerie</a>
             </div>
         </div>
     </div>
