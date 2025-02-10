@@ -11,17 +11,17 @@
     <style>
         /* Navigation Styles */
         .navbar {
-            background: rgba(0, 0, 0, 0.9);
-            padding: 1rem 2rem;
-            position: relative;
+            background-color: rgb(0, 0, 0);
+            transition: background-color 0.3s ease;
+            position: fixed;
             width: 100%;
+            top: 0;
             z-index: 1000;
-            transition: all 0.3s ease;
+            padding: 15px 0;
         }
 
-        .navbar.scrolled {
-            background: rgba(0, 0, 0, 0.95);
-            padding: 0.8rem 2rem;
+        .navbar.transparent {
+            background-color: rgb(0, 0, 0);
         }
 
         .nav-content {
@@ -49,6 +49,7 @@
             display: flex;
             gap: 2rem;
             margin-left: auto;
+            background: rgba(0, 0, 0, 0.9);
         }
 
         .nav-links a {
@@ -57,7 +58,7 @@
             font-size: 1.1rem;
             font-weight: 500;
             position: relative;
-            padding: 0.5rem 0;
+            padding: 0.5rem 1rem;
             transition: color 0.3s ease;
         }
 
@@ -133,7 +134,7 @@
             }
 
             .nav-links {
-                background: rgba(0, 0, 0, 0.95);
+                background: rgba(0, 0, 0, 0.9);
                 position: fixed;
                 top: 0;
                 right: -100%;
@@ -295,31 +296,27 @@
         }
 
         /* Basis-Animation für alle Content-Elemente */
-        .fade-in {
+        .content-fade-in {
             opacity: 0;
             animation: fadeInUp 0.6s ease-out forwards;
         }
 
-        /* Verzögerte Animation für aufeinanderfolgende Elemente */
-        {% for i in range(30) %}
-        .fade-in:nth-child({{ i + 1 }}) {
-            animation-delay: {{ i * 0.1 }}s;
-        }
-        {% endfor %}
-
-        /* Spezielle Animationen für verschiedene Seitenelemente */
         .menu-item, .gallery-item, .impressum-section, .contact-info, 
         .about-section, .feature-box, .opening-hours {
             opacity: 0;
             animation: fadeInUp 0.6s ease-out forwards;
         }
 
-        .menu-items .menu-item:nth-child(n),
-        .gallery-grid .gallery-item:nth-child(n),
-        .impressum-content > *:nth-child(n),
-        .about-features .feature-box:nth-child(n) {
-            animation-delay: calc(0.1s * var(--animation-order, 0));
+        /* Verzögerte Animation für aufeinanderfolgende Elemente */
+        {% for i in range(30) %}
+        .content-fade-in:nth-child({{ i + 1 }}),
+        .menu-items .menu-item:nth-child({{ i + 1 }}),
+        .gallery-grid .gallery-item:nth-child({{ i + 1 }}),
+        .impressum-content > *:nth-child({{ i + 1 }}),
+        .about-features .feature-box:nth-child({{ i + 1 }}) {
+            animation-delay: {{ i * 0.1 }}s;
         }
+        {% endfor %}
     </style>
 </head>
 <body>

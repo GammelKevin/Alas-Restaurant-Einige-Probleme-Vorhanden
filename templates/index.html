@@ -1,37 +1,245 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant ALAS - Griechische Spezialitäten in Moos</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    {% extends "base.html" %}
+{% extends "base.html" %}
 
-    {% block content %}
-    <div class="loading-screen">
-        <div class="loader">
-            <div class="loader-inner"></div>
+{% block content %}
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            margin-top: -76px; /* Ausgleich für die Navbar-Höhe */
+        }
+
+        .hero-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            animation: fadeIn 2s ease-out;
+        }
+
+        .hero-content {
+            color: white;
+            max-width: 800px;
+            padding: 20px;
+            animation: slideUp 1.5s ease-out;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .hero-content p {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .scroll-down {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .scroll-down i {
+            font-size: 2em;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .section-title h2 {
+            opacity: 0;
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1.5s ease-out forwards;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .about-text p {
+            opacity: 0;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            animation: fadeInUp 1.5s ease-out 0.3s forwards;
+            color: #666;
+        }
+
+        .feature {
+            opacity: 0;
+            animation: slideInLeft 1.5s ease-out forwards;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .feature:nth-child(1) {
+            animation-delay: 0.3s;
+        }
+
+        .feature:nth-child(2) {
+            animation-delay: 0.6s;
+        }
+
+        .feature:nth-child(3) {
+            animation-delay: 0.9s;
+        }
+
+        .feature i {
+            font-size: 2.5rem;
+            color: #c17817;
+            margin-bottom: 1rem;
+        }
+
+        .feature h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .feature p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.8rem;
+            }
+            
+            .hero-content p {
+                font-size: 1.3rem;
+            }
+
+            .section-title h2 {
+                font-size: 2.5rem;
+            }
+
+            .feature {
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+
+    <div class="hero-section">
+        <img src="{{ url_for('static', filename='images/header/home-header.jpg') }}" alt="Restaurant ALAS" class="hero-image">
+        <div class="hero-overlay">
+            <div class="hero-content">
+                <h1>Willkommen bei ALAS</h1>
+                <p>Authentische griechische Küche in gemütlicher Atmosphäre</p>
+                <a href="#opening-hours" class="btn btn-primary">Öffnungszeiten</a>
+            </div>
+        </div>
+        <div class="scroll-down">
+            <i class="fas fa-chevron-down"></i>
         </div>
     </div>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-image">
-            <img src="{{ url_for('static', filename='images/header/home-header.jpg') }}" alt="Restaurant ALAS - Griechische Spezialitäten">
-        </div>
-        <div class="hero-content">
-            <h1>Willkommen bei ALAS</h1>
-            <p>Authentische griechische Küche in gemütlicher Atmosphäre</p>
-            <a href="#opening-hours" class="btn btn-primary">Öffnungszeiten</a>
-        </div>
-    </section>
-
     <!-- About Section -->
-    <section id="about" class="about-section">
+    <section id="about" class="about-section reveal">
         <div class="container">
             <div class="section-title">
                 <h2>Willkommen bei Alas</h2>
@@ -42,19 +250,19 @@
                     <p>Entdecken Sie die authentische griechische Küche in unserem familiär geführten Restaurant in Moos. Wir verwenden nur die besten Zutaten und traditionelle Rezepte, um Ihnen ein unvergessliches Geschmackserlebnis zu bieten.</p>
                     <div class="about-features">
                         <div class="feature">
+                            <i class="fas fa-mortar-pestle"></i>
+                            <h3>ALAS bedeutet "Salz"</h3>
+                            <p>Ein essentielles Element in der griechischen Küche und Kultur</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-store"></i>
+                            <h3>Familienbetrieb</h3>
+                            <p>Seit Ende 2023 mit Leidenschaft geführt</p>
+                        </div>
+                        <div class="feature">
                             <i class="fas fa-utensils"></i>
-                            <h3>Authentische Küche</h3>
-                            <p>Traditionelle griechische Rezepte</p>
-                        </div>
-                        <div class="feature">
-                            <i class="fas fa-wine-glass-alt"></i>
-                            <h3>Ausgewählte Weine</h3>
-                            <p>Griechische und internationale Weine</p>
-                        </div>
-                        <div class="feature">
-                            <i class="fas fa-heart"></i>
-                            <h3>Familiäre Atmosphäre</h3>
-                            <p>Herzlicher Service</p>
+                            <h3>30 Jahre Erfahrung</h3>
+                            <p>Langjährige Expertise in der Gastronomie</p>
                         </div>
                     </div>
                 </div>
@@ -63,7 +271,7 @@
     </section>
 
     <!-- Opening Hours Section -->
-    <section id="opening-hours" class="opening-hours">
+    <section id="opening-hours" class="opening-hours reveal">
         <div class="opening-hours-container">
             <div class="section-title">
                 <h2>Unsere Öffnungszeiten</h2>
@@ -92,7 +300,7 @@
     {% include 'awards_section.html' %}
 
     <!-- Contact Section -->
-    <section id="contact" class="contact-section">
+    <section id="contact" class="contact-section reveal">
         <div class="container">
             <div class="section-title">
                 <h2>Kontakt & Anfahrt</h2>
@@ -129,38 +337,23 @@
             </div>
         </div>
     </section>
-    {% endblock %}
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Kontakt</h3>
-                <p>Telefon: <a href="tel:+4909938230307">09938 2320307</a></p>
-                <p>Email: <a href="mailto:info@restaurant-alas.de">info@restaurant-alas.de</a></p>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Adresse</h3>
-                <p>Alas</p>
-                <p>Münchener Str. 127</p>
-                <p>85051 Ingolstadt</p>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Folgen Sie uns</h3>
-                <div class="social-links">
-                    <a href="https://www.facebook.com/profile.php?id=100063556361475" target="_blank" class="social-link">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 Alas. Alle Rechte vorbehalten.</p>
-        </div>
-    </footer>
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    // Optional: Animation nur einmal abspielen
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: '0px'
+        });
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>
+        document.querySelectorAll('.reveal').forEach((element) => {
+            observer.observe(element);
+        });
+    </script>
+{% endblock %}
