@@ -10,6 +10,7 @@ from PIL import Image
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, BooleanField, SelectField, IntegerField, FloatField, FileField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, InputRequired
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dein-geheimer-schluessel'
