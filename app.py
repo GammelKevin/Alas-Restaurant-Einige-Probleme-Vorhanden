@@ -602,6 +602,18 @@ def admin_gallery_delete(id):
     flash('Bild wurde erfolgreich gelöscht!', 'success')
     return redirect(url_for('admin_gallery'))
 
+@app.route('/salt-story')
+def salt_story():
+    return render_template('salt_story.html')
+
+@app.route('/family-story')
+def family_story():
+    return render_template('family_story.html')
+
+@app.route('/experience-story')
+def experience_story():
+    return render_template('experience_story.html')
+
 # Error handlers
 @app.errorhandler(404)
 def page_not_found(e):

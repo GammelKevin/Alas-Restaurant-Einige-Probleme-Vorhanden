@@ -59,11 +59,13 @@
 
         .nav-brand {
             font-family: 'Playfair Display', serif;
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: #fff;
             text-decoration: none;
             font-weight: 700;
             transition: color 0.3s ease;
+            padding: 10px 0;
+            letter-spacing: 1px;
         }
 
         .nav-brand:hover {
@@ -181,6 +183,17 @@
                 font-size: 1.5rem;
                 margin: 1rem 0;
             }
+        }
+
+        /* Content Padding für alle Seiten außer der Startseite */
+        .content-wrapper {
+            padding-top: 120px; /* Genug Platz für den Header */
+        }
+
+        /* Hero-Section (Startseite) braucht kein Padding */
+        .hero-section {
+            margin-top: 0;
+            padding-top: 0;
         }
 
         /* Footer Styles */
@@ -342,6 +355,15 @@
             animation-delay: {{ i * 0.1 }}s;
         }
         {% endfor %}
+
+        /* Zusätzliches Styling für Sektionen */
+        section {
+            padding-top: 40px; /* Zusätzliches Padding für Sektionen */
+        }
+
+        .section-title {
+            padding-top: 20px; /* Zusätzliches Padding für Überschriften */
+        }
     </style>
 </head>
 <body>
@@ -363,7 +385,13 @@
         </div>
     </nav>
 
-    {% block content %}{% endblock %}
+    {% if not request.endpoint == 'index' %}
+    <div class="content-wrapper">
+    {% endif %}
+        {% block content %}{% endblock %}
+    {% if not request.endpoint == 'index' %}
+    </div>
+    {% endif %}
 
     <footer class="footer">
         <div class="footer-content">

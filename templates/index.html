@@ -129,7 +129,200 @@
         box-sizing: border-box;
         overflow-x: hidden;
     }
+
+    .hero-content .button-group {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .hero-button {
+        display: inline-block;
+        padding: 15px 30px;
+        background-color: #c17817;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+    .hero-button:hover {
+        background-color: #a66714;
+    }
+
+    /* Popup Styles */
+    .popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .popup-content {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        max-width: 500px;
+        text-align: center;
+        position: relative;
+        animation: popupFadeIn 0.3s ease-out;
+    }
+
+    @keyframes popupFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .popup-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 24px;
+        cursor: pointer;
+        color: #333;
+    }
+
+    .popup-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .popup-text {
+        margin-bottom: 30px;
+        line-height: 1.6;
+        color: #666;
+    }
+
+    .popup-phone {
+        font-size: 24px;
+        color: #c17817;
+        font-weight: bold;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    /* Info Box Styles */
+    .feature-box {
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        height: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .feature-icon {
+        font-size: 2.5em;
+        color: #c17817;
+        margin-bottom: 20px;
+    }
+
+    .feature-title {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.5em;
+    }
+
+    .feature-text {
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .feature-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #c17817;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        padding: 20px;
+    }
+
+    .feature-overlay-text {
+        color: white;
+        margin-bottom: 20px;
+        font-size: 1.1em;
+        line-height: 1.6;
+    }
+
+    .feature-button {
+        display: inline-block;
+        padding: 10px 30px;
+        background-color: transparent;
+        border: 2px solid white;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        font-size: 1em;
+        transition: all 0.3s ease;
+    }
+
+    .feature-button:hover {
+        background-color: white;
+        color: #c17817;
+    }
+
+    .feature-box:hover .feature-overlay {
+        opacity: 1;
+    }
+
+    .btn-outline-light {
+        color: white;
+        border: 2px solid white;
+        padding: 8px 20px;
+        border-radius: 25px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .btn-outline-light:hover {
+        background: white;
+        color: #c17817;
+    }
 </style>
+
+<!-- Reservation Popup -->
+<div class="popup-overlay" id="reservationPopup">
+    <div class="popup-content">
+        <span class="popup-close" onclick="closePopup()">&times;</span>
+        <h2 class="popup-title">Reservierung</h2>
+        <p class="popup-text">Reservierungen sind ausschließlich telefonisch möglich.</p>
+        <p class="popup-text">Sie erreichen uns unter:</p>
+        <a href="tel:+4999382320307" class="popup-phone">09938 2320307</a>
+        <p class="popup-text">Wir freuen uns auf Ihren Anruf und beraten Sie gerne persönlich bei der Tischauswahl!</p>
+    </div>
+</div>
 
 <div class="hero-section">
     <img src="{{ url_for('static', filename='images/header/home-header.jpg') }}" alt="Restaurant ALAS" class="hero-image">
@@ -137,7 +330,10 @@
         <div class="hero-content">
             <h1>Willkommen bei ALAS</h1>
             <p>Authentische griechische Küche in gemütlicher Atmosphäre</p>
-            <a href="{{ url_for('menu') }}" class="btn btn-primary">Speisekarte</a>
+            <div class="button-group">
+                <a href="{{ url_for('menu') }}" class="hero-button">SPEISEKARTE</a>
+                <a href="#" class="hero-button" onclick="openPopup()">JETZT RESERVIEREN</a>
+            </div>
         </div>
     </div>
     <div class="scroll-down">
@@ -164,6 +360,30 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(section);
     });
 });
+
+function openPopup() {
+    document.getElementById('reservationPopup').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closePopup() {
+    document.getElementById('reservationPopup').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Close popup when clicking outside
+document.getElementById('reservationPopup').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closePopup();
+    }
+});
+
+// Close popup with ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePopup();
+    }
+});
 </script>
 
 <!-- About Section -->
@@ -173,26 +393,50 @@ document.addEventListener('DOMContentLoaded', function() {
             <h2>Willkommen bei Alas</h2>
         </div>
         <div class="about-content">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="feature-box">
+                        <i class="fas fa-mortar-pestle feature-icon"></i>
+                        <h3 class="feature-title">ALAS bedeutet "Salz"</h3>
+                        <p class="feature-text">Ein essentielles Element in der griechischen Küche und Kultur</p>
+                        <div class="feature-overlay">
+                            <p class="feature-overlay-text">Entdecken Sie die tiefere Bedeutung von Salz in der griechischen Küche und Kultur.</p>
+                            <a href="{{ url_for('salt_story') }}" class="feature-button">Mehr erfahren</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-box">
+                        <i class="fas fa-store feature-icon"></i>
+                        <h3 class="feature-title">Familienbetrieb</h3>
+                        <p class="feature-text">Eine Geschichte, die 1988 in Griechenland begann. Mit Tradition, Leidenschaft und Liebe zur mediterranen Küche führen wir unser Restaurant als echten Familienbetrieb.</p>
+                        <div class="feature-overlay">
+                            <div class="overlay-content">
+                                <h4>Unsere Familiengeschichte</h4>
+                                <p>Von Griechenland nach Deutschland, von der Taverne zum eigenen Restaurant – entdecken Sie die Geschichte einer Familie, die ihre Träume und Traditionen über Generationen bewahrt hat.</p>
+                                <a href="{{ url_for('family_story') }}" class="btn btn-outline-light">Mehr erfahren</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-box">
+                        <i class="fas fa-utensils feature-icon"></i>
+                        <h3 class="feature-title">30 Jahre Erfahrung</h3>
+                        <p class="feature-text">Drei Jahrzehnte Expertise in der mediterranen Küche. Von traditionellen Rezepten bis zur modernen Interpretation – bei uns schmecken Sie die Erfahrung.</p>
+                        <div class="feature-overlay">
+                            <div class="overlay-content">
+                                <h4>Jahrzehnte der Perfektion</h4>
+                                <p>Erleben Sie das Ergebnis von 30 Jahren Leidenschaft für die griechische Küche. Jedes Gericht erzählt seine eigene Geschichte von Tradition und Qualität.</p>
+                                <a href="{{ url_for('experience_story') }}" class="btn btn-outline-light">Mehr erfahren</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="about-text">
                 <p>Genießen Sie authentische griechische Küche in gemütlicher Atmosphäre. Unser Restaurant bietet Ihnen traditionelle Spezialitäten, zubereitet mit frischen Zutaten und viel Liebe zum Detail.</p>
                 <p>Entdecken Sie die authentische griechische Küche in unserem familiär geführten Restaurant in Moos. Wir verwenden nur die besten Zutaten und traditionelle Rezepte, um Ihnen ein unvergessliches Geschmackserlebnis zu bieten.</p>
-                <div class="about-features">
-                    <div class="feature">
-                        <i class="fas fa-mortar-pestle"></i>
-                        <h3>ALAS bedeutet "Salz"</h3>
-                        <p>Ein essentielles Element in der griechischen Küche und Kultur</p>
-                    </div>
-                    <div class="feature">
-                        <i class="fas fa-store"></i>
-                        <h3>Familienbetrieb</h3>
-                        <p>Seit Ende 2023 mit Leidenschaft geführt</p>
-                    </div>
-                    <div class="feature">
-                        <i class="fas fa-utensils"></i>
-                        <h3>30 Jahre Erfahrung</h3>
-                        <p>Langjährige Expertise in der Gastronomie</p>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
