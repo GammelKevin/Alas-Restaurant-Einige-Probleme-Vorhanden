@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 from PIL import Image
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, BooleanField, SelectField, IntegerField, FloatField, FileField, TextAreaField
+from wtforms import StringField, SubmitField, BooleanField, SelectField, IntegerField, FloatField, FileField, TextAreaField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, InputRequired
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
@@ -98,19 +98,28 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('admin'))
+
+    class LoginForm(FlaskForm):
+        username = StringField('Username', validators=[DataRequired()])
+        password = PasswordField('Password', validators=[DataRequired()])
+
+    form = LoginForm()
+        
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        
         user = User.query.filter_by(username=username).first()
         
-        if user and user.check_password(password):
+        if user and check_password_hash(user.password_hash, password):
             login_user(user)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('admin'))
+            return redirect(url_for('admin'))
         else:
-            flash('Ungültige Anmeldedaten')
+            flash('Ungültiger Benutzername oder Passwort')
     
-    return render_template('admin/login.html')
+    return render_template('admin/login.html', form=form)
 
 @app.route('/admin')
 @login_required

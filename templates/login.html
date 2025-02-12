@@ -14,6 +14,7 @@
         {% endwith %}
         
         <form method="POST" action="{{ url_for('login') }}" class="login-form">
+            {{ form.hidden_tag() }}
             <div class="form-group">
                 <label for="username">Benutzername</label>
                 <input type="text" id="username" name="username" required>
