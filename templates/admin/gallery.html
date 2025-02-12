@@ -16,7 +16,7 @@
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100">
                 <div class="position-relative">
-                    <img src="{{ url_for('static', filename=image.image_path) }}" 
+                    <img src="{{ url_for('static', filename=image.filename) }}" 
                          class="card-img-top"
                          alt="{{ image.title }}"
                          style="height: 200px; object-fit: cover;"
@@ -58,7 +58,7 @@
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <img src="{{ url_for('static', filename=image.image_path) }}" 
+                                <img src="{{ url_for('static', filename=image.filename) }}" 
                                      class="img-fluid rounded"
                                      alt="{{ image.title }}"
                                      onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">

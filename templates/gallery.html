@@ -43,9 +43,9 @@
         <div class="gallery-grid">
             {% for image in images %}
             <div class="gallery-item">
-                <a href="{{ url_for('static', filename=image.image_path) }}" class="gallery-lightbox">
+                <a href="{{ url_for('static', filename=image.filename) }}" class="gallery-lightbox">
                     <div class="gallery-image">
-                        <img src="{{ url_for('static', filename=image.image_path) }}" 
+                        <img src="{{ url_for('static', filename=image.filename) }}" 
                              alt="{{ image.title }}" 
                              loading="lazy"
                              onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'"

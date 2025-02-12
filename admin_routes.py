@@ -156,64 +156,54 @@ def gallery():
 @login_required
 def statistics():
     # Zeitraum für die Statistiken (letzte 30 Tage)
-    end_date = datetime.now()
+    end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=30)
     
-    # Seitenaufrufe pro Tag
-    daily_visits = db.session.query(
-        func.date(PageVisit.timestamp).label('date'),
-        func.count(PageVisit.id).label('count')
-    ).filter(
-        PageVisit.timestamp >= start_date,
-        PageVisit.timestamp <= end_date
-    ).group_by(
-        func.date(PageVisit.timestamp)
-    ).order_by(
-        func.date(PageVisit.timestamp)
-    ).all()
-    
-    # Galerie-Aufrufe pro Tag
-    gallery_views = db.session.query(
-        func.date(GalleryView.timestamp).label('date'),
-        func.count(GalleryView.id).label('count')
-    ).filter(
-        GalleryView.timestamp >= start_date,
-        GalleryView.timestamp <= end_date
-    ).group_by(
-        func.date(GalleryView.timestamp)
-    ).order_by(
-        func.date(GalleryView.timestamp)
-    ).all()
-    
-    # Tägliche Statistiken
+    # Hole die täglichen Statistiken
     daily_stats = DailyStats.query.filter(
         DailyStats.date >= start_date.date(),
         DailyStats.date <= end_date.date()
-    ).order_by(DailyStats.date).all()
+    ).order_by(DailyStats.date.desc()).all()
     
-    # Formatiere die Daten für die Diagramme
-    dates = [(end_date - timedelta(days=x)).strftime('%Y-%m-%d') for x in range(30)]
-    visits_data = {str(date): count for date, count in daily_visits}
-    gallery_data = {str(date): count for date, count in gallery_views}
-    stats_data = {str(stat.date): stat for stat in daily_stats}
+    # Berechne Gesamtstatistiken
+    total_visits = sum(stat.total_visits for stat in daily_stats)
+    total_unique_visitors = sum(stat.unique_visitors for stat in daily_stats)
+    total_gallery_views = sum(stat.gallery_views for stat in daily_stats)
     
-    # Erstelle die vollständigen Datenlisten (mit Nullen für fehlende Tage)
-    visits = [visits_data.get(date, 0) for date in dates]
-    gallery = [gallery_data.get(date, 0) for date in dates]
-    conversion = []
+    # Hole Seitenaufrufe nach Seite
+    page_visits = db.session.query(
+        PageVisit.page,
+        func.count(PageVisit.id).label('visits')
+    ).filter(
+        PageVisit.timestamp >= start_date
+    ).group_by(
+        PageVisit.page
+    ).order_by(
+        func.count(PageVisit.id).desc()
+    ).all()
     
-    for date in dates:
-        if date in stats_data and stats_data[date].total_visits > 0:
-            rate = (stats_data[date].converted_visits / stats_data[date].total_visits) * 100
-            conversion.append(round(rate, 2))
-        else:
-            conversion.append(0)
+    # Hole Galerie-Aufrufe nach Bild
+    gallery_views = db.session.query(
+        GalleryImage.title,
+        func.count(GalleryView.id).label('views')
+    ).join(
+        GalleryView,
+        GalleryView.image_id == GalleryImage.id
+    ).filter(
+        GalleryView.timestamp >= start_date
+    ).group_by(
+        GalleryImage.title
+    ).order_by(
+        func.count(GalleryView.id).desc()
+    ).all()
     
     return render_template('admin/statistics.html',
-                         dates=dates,
-                         visits=visits,
-                         gallery=gallery,
-                         conversion=conversion)
+                         daily_stats=daily_stats,
+                         total_visits=total_visits,
+                         total_unique_visitors=total_unique_visitors,
+                         total_gallery_views=total_gallery_views,
+                         page_visits=page_visits,
+                         gallery_views=gallery_views)
 
 @admin.route('/menu/add', methods=['POST'])
 @login_required

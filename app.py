@@ -2,9 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import case
+from sqlalchemy import case, func
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 from PIL import Image
 from flask_wtf import FlaskForm
@@ -67,8 +67,7 @@ def inject_now():
 
 @app.before_request
 def before_request():
-    # Ignoriere statische Dateien und Admin-Routen
-    if not request.path.startswith('/static') and not request.path.startswith('/admin'):
+    if not request.path.startswith('/static/'):
         track_page_visit(request.path)
 
 @app.route('/')
@@ -462,7 +461,7 @@ def admin_gallery_add():
             filename = f"{timestamp}_{original_filename}"
             
             # Ensure the gallery upload directory exists
-            gallery_path = os.path.join(app.static_folder, 'uploads', 'gallery')
+            gallery_path = os.path.join('static', 'uploads', 'gallery')
             os.makedirs(gallery_path, exist_ok=True)
             
             # Save the image
@@ -480,7 +479,7 @@ def admin_gallery_add():
             new_image = GalleryImage(
                 title=form.title.data,
                 description=form.description.data,
-                image_path=relative_path
+                filename=relative_path
             )
             
             try:
@@ -503,9 +502,9 @@ def admin_gallery_add():
 @login_required
 def admin_gallery_delete(id):
     image = GalleryImage.query.get_or_404(id)
-    if image.image_path:
+    if image.filename:
         try:
-            os.remove(os.path.join(app.static_folder, image.image_path))
+            os.remove(os.path.join('static', image.filename))
         except:
             pass
     db.session.delete(image)
@@ -603,4 +602,4 @@ def resize_and_crop_image(image_path, output_size=(400, 180)):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True, port=3001)
+    app.run(debug=True, port=5000)
