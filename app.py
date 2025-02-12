@@ -521,10 +521,14 @@ def admin_gallery_delete(id):
     flash('Bild wurde erfolgreich gelöscht!', 'success')
     return redirect(url_for('admin_gallery'))
 
-@app.route('/track_gallery_view/<image_id>')
+@app.route('/track_image_view/<int:image_id>', methods=['POST'])
 def track_image_view(image_id):
-    track_gallery_view(image_id)
-    return jsonify({'status': 'success'})
+    try:
+        track_gallery_view(image_id)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Fehler beim Tracking des Bildaufrufs: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/salt-story')
 def salt_story():

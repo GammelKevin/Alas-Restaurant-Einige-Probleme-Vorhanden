@@ -43,13 +43,15 @@
         <div class="gallery-grid">
             {% for image in images %}
             <div class="gallery-item">
-                <a href="{{ url_for('static', filename=image.filename) }}" class="gallery-lightbox">
+                <a href="{{ url_for('static', filename=image.filename) }}" 
+                   class="gallery-lightbox"
+                   data-image-id="{{ image.id }}"
+                   onclick="trackGalleryView({{ image.id }}); return true;">
                     <div class="gallery-image">
                         <img src="{{ url_for('static', filename=image.filename) }}" 
                              alt="{{ image.title }}" 
                              loading="lazy"
-                             onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'"
-                        >
+                             onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
                     </div>
                     <div class="gallery-info">
                         <h3>{{ image.title }}</h3>
@@ -67,6 +69,28 @@
         </div>
     </div>
 </div>
+
+<script>
+function trackGalleryView(imageId) {
+    fetch(`/track_image_view/${imageId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).catch(error => console.error('Error tracking gallery view:', error));
+}
+
+// Lightbox Initialisierung
+document.addEventListener('DOMContentLoaded', function() {
+    const lightbox = GLightbox({
+        selector: '.gallery-lightbox',
+        touchNavigation: true,
+        loop: true,
+        autoplayVideos: true
+    });
+});
+</script>
+
 {% endblock %}
 
 {% block extra_scripts %}
