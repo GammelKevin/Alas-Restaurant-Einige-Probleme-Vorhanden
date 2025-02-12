@@ -364,13 +364,30 @@
         .section-title {
             padding-top: 20px; /* Zusätzliches Padding für Überschriften */
         }
+
+        .logo {
+            height: 100px;  /* Von 80px auf 100px erhöht */
+            width: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-brand {
+            padding: 0;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                height: 70px;  /* Von 60px auf 70px erhöht für mobile Geräte */
+            }
+        }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-content">
-            <a href="/" class="nav-brand">
-                <img src="{{ url_for('static', filename='img/awards/Alas_Logo-removebg-preview.png') }}" alt="ALAS Logo" class="nav-logo">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/Alas_Logo.png') }}" alt="Restaurant Alas Logo" class="logo">
             </a>
             <div class="nav-links">
                 <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Home</a>

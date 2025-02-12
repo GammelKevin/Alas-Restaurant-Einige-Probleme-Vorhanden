@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_login import login_user, login_required, logout_user, current_user
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import case
 import os
@@ -12,8 +12,14 @@ from wtforms import StringField, SubmitField, BooleanField, SelectField, Integer
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, InputRequired
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
+from extensions import db, login_manager, init_extensions
+from models import User, MenuItem, MenuCategory, OpeningHours, GalleryImage, PageVisit, GalleryView, DailyStats
+from utils import track_page_visit, track_gallery_view
+from admin_routes import admin
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dein-geheimer-schluessel'
+csrf = CSRFProtect(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurant.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -21,96 +27,22 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 # Stelle sicher, dass der Upload-Ordner existiert
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-db = SQLAlchemy(app)
+# Initialisiere Erweiterungen
+init_extensions(app)
 
-# Login Manager Setup
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-login_manager.login_message = 'Bitte melden Sie sich an, um auf den Admin-Bereich zuzugreifen.'
-login_manager.login_message_category = 'error'
+# Registriere Blueprints
+app.register_blueprint(admin)
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Models
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(120), nullable=False)
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-class MenuCategory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-    display_name = db.Column(db.String(50), nullable=False)
-    order = db.Column(db.Integer, nullable=False)
-    is_drink_category = db.Column(db.Boolean, default=False)
-    items = db.relationship('MenuItem', backref='category', lazy=True)
-
-class MenuItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    price = db.Column(db.Float, nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('menu_category.id'), nullable=False)
-    image_path = db.Column(db.String(255))
-    order = db.Column(db.Integer, default=0)
-    is_lunch_special = db.Column(db.Boolean, default=False)
-    
-    # Dietary and characteristic attributes
-    vegetarian = db.Column(db.Boolean, default=False)
-    vegan = db.Column(db.Boolean, default=False)
-    spicy = db.Column(db.Boolean, default=False)
-    gluten_free = db.Column(db.Boolean, default=False)
-    lactose_free = db.Column(db.Boolean, default=False)
-    kid_friendly = db.Column(db.Boolean, default=False)
-    alcohol_free = db.Column(db.Boolean, default=False)
-    contains_alcohol = db.Column(db.Boolean, default=False)
-    homemade = db.Column(db.Boolean, default=False)
-    sugar_free = db.Column(db.Boolean, default=False)
-    recommended = db.Column(db.Boolean, default=False)
-
-class OpeningHours(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    day = db.Column(db.String(20), nullable=False)
-    open_time_1 = db.Column(db.String(5))
-    close_time_1 = db.Column(db.String(5))
-    open_time_2 = db.Column(db.String(5))
-    close_time_2 = db.Column(db.String(5))
-    closed = db.Column(db.Boolean, default=False)
-    vacation_start = db.Column(db.String(10))  # Store as string in YYYY-MM-DD format
-    vacation_end = db.Column(db.String(10))    # Store as string in YYYY-MM-DD format
-    vacation_active = db.Column(db.Boolean, default=False)
-
-class GalleryImage(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    image_path = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    order = db.Column(db.Integer, default=0)
-
-class OpeningHoursForm(FlaskForm):
-    monday_hours = StringField('Montag')
-    tuesday_hours = StringField('Dienstag')
-    wednesday_hours = StringField('Mittwoch')
-    thursday_hours = StringField('Donnerstag')
-    friday_hours = StringField('Freitag')
-    saturday_hours = StringField('Samstag')
-    sunday_hours = StringField('Sonntag')
-
+# Forms
 class MenuItemForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     description = TextAreaField('Beschreibung', validators=[DataRequired()])
     price = FloatField('Preis', validators=[DataRequired()])
-    category = SelectField('Kategorie', coerce=int)
+    category_id = SelectField('Kategorie', coerce=int)
     image = FileField('Bild', validators=[FileAllowed(['jpg', 'png'], 'Nur Bilder erlaubt')])
     vegetarian = BooleanField('Vegetarisch')
     vegan = BooleanField('Vegan')
@@ -129,40 +61,19 @@ class GalleryImageForm(FlaskForm):
     description = TextAreaField('Beschreibung', validators=[DataRequired()])
     image = FileField('Bild', validators=[FileAllowed(['jpg', 'png'], 'Nur Bilder erlaubt')])
 
-def init_db():
-    db.create_all()
-    
-    # Initialize opening hours if not exists
-    if not OpeningHours.query.first():
-        days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
-        for day in days:
-            hours = OpeningHours(
-                day=day,
-                open_time_1='11:30',
-                close_time_1='14:30',
-                open_time_2='17:30',
-                close_time_2='22:00',
-                closed=False,
-                vacation_active=False,
-                vacation_start=None,
-                vacation_end=None
-            )
-            db.session.add(hours)
-        db.session.commit()
-
-    # Initialize admin user if not exists
-    if not User.query.filter_by(username='admin').first():
-        admin = User(username='admin')
-        admin.set_password('admin123')  # Change this password!
-        db.session.add(admin)
-        db.session.commit()
-
 @app.context_processor
 def inject_now():
     return {'now': datetime.now()}
 
+@app.before_request
+def before_request():
+    # Ignoriere statische Dateien und Admin-Routen
+    if not request.path.startswith('/static') and not request.path.startswith('/admin'):
+        track_page_visit(request.path)
+
 @app.route('/')
 def index():
+    track_page_visit('index')
     image_path = os.path.join(app.static_folder, 'img/awards/Lokal_Des_Jahres_Deutschlansd_2024_Bild-removebg-preview.png')
     print(f"Checking image path: {image_path}")
     print(f"File exists: {os.path.exists(image_path)}")
@@ -183,7 +94,7 @@ def index():
         return render_template('index.html', categories=categories, menu_items=menu_items, opening_hours=opening_hours)
     except Exception as e:
         print(f"Fehler auf der Homepage: {str(e)}")
-        init_db()  # Initialisiere die Datenbank falls sie nicht existiert
+        db.create_all()  # Initialisiere die Datenbank falls sie nicht existiert
         return redirect(url_for('index'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -527,6 +438,7 @@ def logout():
 
 @app.route('/galerie')
 def gallery():
+    track_page_visit('gallery')
     images = GalleryImage.query.order_by(GalleryImage.order).all()
     return render_template('gallery.html', images=images)
 
@@ -539,10 +451,9 @@ def admin_gallery():
 @app.route('/admin/galerie/add', methods=['GET', 'POST'])
 @login_required
 def admin_gallery_add():
-    if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        image = request.files.get('image')
+    form = GalleryImageForm()
+    if form.validate_on_submit():
+        image = form.image.data
         
         if image:
             # Generate a unique filename using timestamp
@@ -567,8 +478,8 @@ def admin_gallery_add():
             # Create database entry with relative path
             relative_path = os.path.join('uploads', 'gallery', filename).replace('\\', '/')
             new_image = GalleryImage(
-                title=title,
-                description=description,
+                title=form.title.data,
+                description=form.description.data,
                 image_path=relative_path
             )
             
@@ -586,7 +497,7 @@ def admin_gallery_add():
         else:
             flash('Bitte wählen Sie ein Bild aus.', 'error')
     
-    return render_template('admin/gallery_add.html')
+    return render_template('admin/gallery_add.html', form=form)
 
 @app.route('/admin/galerie/delete/<int:id>')
 @login_required
@@ -602,6 +513,11 @@ def admin_gallery_delete(id):
     flash('Bild wurde erfolgreich gelöscht!', 'success')
     return redirect(url_for('admin_gallery'))
 
+@app.route('/track_gallery_view/<image_id>')
+def track_image_view(image_id):
+    track_gallery_view(image_id)
+    return jsonify({'status': 'success'})
+
 @app.route('/salt-story')
 def salt_story():
     return render_template('salt_story.html')
@@ -613,6 +529,37 @@ def family_story():
 @app.route('/experience-story')
 def experience_story():
     return render_template('experience_story.html')
+
+@app.route('/admin/statistics')
+@login_required
+def admin_statistics():
+    days = request.args.get('days', default=30, type=int)
+    stats = get_statistics(days)
+    
+    # Bereite die Daten für die Grafiken vor
+    dates = []
+    total_visits = []
+    unique_visitors = []
+    gallery_views = []
+    
+    for stat in stats:
+        dates.append(stat.date.strftime('%Y-%m-%d'))
+        total_visits.append(stat.total_visits)
+        unique_visitors.append(stat.unique_visitors)
+        gallery_views.append(stat.gallery_views)
+    
+    # Umkehren der Listen, damit die ältesten Daten zuerst kommen
+    dates.reverse()
+    total_visits.reverse()
+    unique_visitors.reverse()
+    gallery_views.reverse()
+    
+    return render_template('admin/statistics.html', 
+                         dates=dates,
+                         total_visits=total_visits,
+                         unique_visitors=unique_visitors,
+                         gallery_views=gallery_views,
+                         selected_days=days)
 
 # Error handlers
 @app.errorhandler(404)
@@ -655,8 +602,5 @@ def resize_and_crop_image(image_path, output_size=(400, 180)):
 
 if __name__ == '__main__':
     with app.app_context():
-        init_db()
-    app.run(debug=True, port=5001)
-else:
-    with app.app_context():
-        init_db()
+        db.create_all()
+    app.run(debug=True, port=3001)

@@ -1,0 +1,126 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Statistiken</h2>
+    
+    <!-- Gesamtstatistiken -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Gesamtbesuche (30 Tage)</h5>
+                    <p class="card-text display-4">{{ total_visits }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Eindeutige Besucher (30 Tage)</h5>
+                    <p class="card-text display-4">{{ total_unique_visitors }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Galerie-Aufrufe (30 Tage)</h5>
+                    <p class="card-text display-4">{{ total_gallery_views }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tägliche Statistiken -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Tägliche Statistiken</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Besuche</th>
+                            <th>Eindeutige Besucher</th>
+                            <th>Galerie-Aufrufe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in daily_stats %}
+                        <tr>
+                            <td>{{ stat.date.strftime('%d.%m.%Y') }}</td>
+                            <td>{{ stat.total_visits }}</td>
+                            <td>{{ stat.unique_visitors }}</td>
+                            <td>{{ stat.gallery_views }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seitenaufrufe -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Seitenaufrufe nach Seite</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Seite</th>
+                                    <th>Aufrufe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for page, visits in page_visits %}
+                                <tr>
+                                    <td>{{ page }}</td>
+                                    <td>{{ visits }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Galerie-Aufrufe -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Galerie-Aufrufe nach Bild</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Bild</th>
+                                    <th>Aufrufe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for title, views in gallery_views %}
+                                <tr>
+                                    <td>{{ title }}</td>
+                                    <td>{{ views }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
