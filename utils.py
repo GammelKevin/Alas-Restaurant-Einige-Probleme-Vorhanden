@@ -57,6 +57,7 @@ def track_page_visit(page):
 
 def track_gallery_view(image_id):
     try:
+        print(f"Tracking gallery view for image {image_id}")  # Debug
         now = datetime.utcnow()
         today = now.date()
 
@@ -66,12 +67,16 @@ def track_gallery_view(image_id):
             ip_address=request.remote_addr,
             timestamp=now
         )
+        print(f"Created view object: {view}")  # Debug
         db.session.add(view)
+        db.session.flush()
         
         # Aktualisiere die Tagesstatistik
         stats = DailyStats.query.filter_by(date=today).first()
+        print(f"Found stats for today: {stats}")  # Debug
         
         if not stats:
+            print("Creating new stats for today")  # Debug
             stats = DailyStats(
                 date=today,
                 total_visits=0,
@@ -80,12 +85,17 @@ def track_gallery_view(image_id):
             )
             db.session.add(stats)
         else:
+            print(f"Updating existing stats. Current gallery_views: {stats.gallery_views}")  # Debug
             stats.gallery_views += 1
+            print(f"New gallery_views: {stats.gallery_views}")  # Debug
         
         db.session.commit()
+        print("Successfully committed changes")  # Debug
+        return True
     except Exception as e:
         print(f"Fehler beim Tracking des Galerieaufrufs: {str(e)}")
         db.session.rollback()
+        raise
 
 def get_statistics(days=30):
     end_date = datetime.utcnow().date()

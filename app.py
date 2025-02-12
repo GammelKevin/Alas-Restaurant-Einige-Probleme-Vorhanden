@@ -523,11 +523,19 @@ def admin_gallery_delete(id):
 
 @app.route('/track_image_view/<int:image_id>', methods=['POST'])
 def track_image_view(image_id):
+    print(f"Received tracking request for image {image_id}")  # Debug
     try:
-        track_gallery_view(image_id)
+        # Überprüfe, ob das Bild existiert
+        image = GalleryImage.query.get(image_id)
+        if not image:
+            print(f"Image {image_id} not found")  # Debug
+            return jsonify({'success': False, 'error': 'Image not found'}), 404
+            
+        success = track_gallery_view(image_id)
+        print(f"Tracking successful: {success}")  # Debug
         return jsonify({'success': True})
     except Exception as e:
-        print(f"Fehler beim Tracking des Bildaufrufs: {str(e)}")
+        print(f"Error in track_image_view: {str(e)}")  # Debug
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/salt-story')

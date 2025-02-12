@@ -46,7 +46,7 @@
                 <a href="{{ url_for('static', filename=image.filename) }}" 
                    class="gallery-lightbox"
                    data-image-id="{{ image.id }}"
-                   onclick="trackGalleryView({{ image.id }}); return true;">
+                   onclick="return trackGalleryView(event, {{ image.id }});">
                     <div class="gallery-image">
                         <img src="{{ url_for('static', filename=image.filename) }}" 
                              alt="{{ image.title }}" 
@@ -71,23 +71,42 @@
 </div>
 
 <script>
-function trackGalleryView(imageId) {
-    fetch(`/track_image_view/${imageId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
+async function trackGalleryView(event, imageId) {
+    console.log('Tracking gallery view for image:', imageId);
+    try {
+        const response = await fetch(`/track_image_view/${imageId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        console.log('Track response:', data);
+        
+        if (!data.success) {
+            console.error('Error tracking view:', data.error);
         }
-    }).catch(error => console.error('Error tracking gallery view:', error));
+    } catch (error) {
+        console.error('Error tracking gallery view:', error);
+    }
+    
+    // Lightbox öffnen lassen
+    return true;
 }
 
 // Lightbox Initialisierung
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing lightbox...');
     const lightbox = GLightbox({
         selector: '.gallery-lightbox',
         touchNavigation: true,
         loop: true,
         autoplayVideos: true
     });
+    console.log('Lightbox initialized');
 });
 </script>
 
