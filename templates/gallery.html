@@ -71,6 +71,11 @@
 </div>
 
 <script>
+// CSRF-Token aus Meta-Tag holen
+function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
 async function trackGalleryView(event, imageId) {
     console.log('Tracking gallery view for image:', imageId);
     try {
@@ -78,10 +83,15 @@ async function trackGalleryView(event, imageId) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
             },
             credentials: 'same-origin'
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const data = await response.json();
         console.log('Track response:', data);
@@ -100,13 +110,17 @@ async function trackGalleryView(event, imageId) {
 // Lightbox Initialisierung
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Initializing lightbox...');
-    const lightbox = GLightbox({
-        selector: '.gallery-lightbox',
-        touchNavigation: true,
-        loop: true,
-        autoplayVideos: true
-    });
-    console.log('Lightbox initialized');
+    try {
+        const lightbox = GLightbox({
+            selector: '.gallery-lightbox',
+            touchNavigation: true,
+            loop: true,
+            autoplayVideos: true
+        });
+        console.log('Lightbox initialized successfully');
+    } catch (error) {
+        console.error('Error initializing lightbox:', error);
+    }
 });
 </script>
 

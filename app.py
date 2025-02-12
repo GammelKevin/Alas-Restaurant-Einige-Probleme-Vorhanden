@@ -522,6 +522,7 @@ def admin_gallery_delete(id):
     return redirect(url_for('admin_gallery'))
 
 @app.route('/track_image_view/<int:image_id>', methods=['POST'])
+@csrf.exempt  # AJAX-Requests von CSRF-Schutz ausnehmen
 def track_image_view(image_id):
     print(f"Received tracking request for image {image_id}")  # Debug
     try:
