@@ -16,26 +16,38 @@ def track_page_visit(page):
             timestamp=now
         )
         db.session.add(visit)
+        db.session.flush()  # Flush, um sicherzustellen, dass der Besuch gespeichert ist
         
         # Aktualisiere die Tagesstatistik
         stats = DailyStats.query.filter_by(date=today).first()
         
         if not stats:
-            stats = DailyStats(date=today)
+            stats = DailyStats(
+                date=today,
+                total_visits=1,
+                unique_visitors=1 if not PageVisit.query.filter(
+                    PageVisit.timestamp >= now.replace(hour=0, minute=0, second=0, microsecond=0),
+                    PageVisit.ip_address == request.remote_addr,
+                    PageVisit.page == page,
+                    PageVisit.id != visit.id
+                ).first() else 0,
+                gallery_views=0
+            )
             db.session.add(stats)
-        
-        stats.total_visits += 1
-        
-        # Zähle eindeutige Besucher (basierend auf IP)
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        unique_visits = PageVisit.query.filter(
-            PageVisit.timestamp >= today_start,
-            PageVisit.ip_address == request.remote_addr,
-            PageVisit.page == page
-        ).count()
-        
-        if unique_visits <= 1:  # Dies ist der erste Besuch von dieser IP heute
-            stats.unique_visitors += 1
+        else:
+            stats.total_visits += 1
+            
+            # Zähle eindeutige Besucher (basierend auf IP)
+            today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            previous_visits = PageVisit.query.filter(
+                PageVisit.timestamp >= today_start,
+                PageVisit.ip_address == request.remote_addr,
+                PageVisit.page == page,
+                PageVisit.id != visit.id
+            ).count()
+            
+            if previous_visits == 0:  # Dies ist der erste Besuch von dieser IP heute für diese Seite
+                stats.unique_visitors += 1
         
         db.session.commit()
         print(f"Tracked page visit: {page} from {request.remote_addr}")  # Debug-Ausgabe
@@ -60,10 +72,16 @@ def track_gallery_view(image_id):
         stats = DailyStats.query.filter_by(date=today).first()
         
         if not stats:
-            stats = DailyStats(date=today)
+            stats = DailyStats(
+                date=today,
+                total_visits=0,
+                unique_visitors=0,
+                gallery_views=1
+            )
             db.session.add(stats)
+        else:
+            stats.gallery_views += 1
         
-        stats.gallery_views += 1
         db.session.commit()
     except Exception as e:
         print(f"Fehler beim Tracking des Galerieaufrufs: {str(e)}")

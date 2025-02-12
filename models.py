@@ -72,6 +72,12 @@ class GalleryView(db.Model):
 class DailyStats(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False, unique=True)
-    total_visits = db.Column(db.Integer, default=0)
-    unique_visitors = db.Column(db.Integer, default=0)
-    gallery_views = db.Column(db.Integer, default=0)
+    total_visits = db.Column(db.Integer, nullable=False, default=0)
+    unique_visitors = db.Column(db.Integer, nullable=False, default=0)
+    gallery_views = db.Column(db.Integer, nullable=False, default=0)
+
+    def __init__(self, date=None, total_visits=0, unique_visitors=0, gallery_views=0):
+        self.date = date
+        self.total_visits = total_visits
+        self.unique_visitors = unique_visitors
+        self.gallery_views = gallery_views
