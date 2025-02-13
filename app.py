@@ -18,8 +18,8 @@ from utils import track_page_visit, track_gallery_view
 from admin_routes import admin
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'dein-geheimer-schluessel'
-csrf = CSRFProtect(app)
+app.config['SECRET_KEY'] = 'dein-geheimer-schluessel'  # Make sure this is set
+csrf = CSRFProtect(app)  # Initialize CSRF protection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurant.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -104,16 +104,14 @@ def login():
     class LoginForm(FlaskForm):
         username = StringField('Username', validators=[DataRequired()])
         password = PasswordField('Password', validators=[DataRequired()])
+        submit = SubmitField('Anmelden')
 
     form = LoginForm()
         
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
         
-        user = User.query.filter_by(username=username).first()
-        
-        if user and check_password_hash(user.password_hash, password):
+        if user and check_password_hash(user.password_hash, form.password.data):
             login_user(user)
             return redirect(url_for('admin'))
         else:
@@ -198,89 +196,59 @@ def admin_menu_add():
     
     return redirect(url_for('admin_menu'))
 
-@app.route('/admin/menu/edit/<int:id>', methods=['GET'])
+@app.route('/admin/menu/edit/<int:id>')
+@login_required
 def admin_menu_edit(id):
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
+    
     item = MenuItem.query.get_or_404(id)
-    return jsonify({
-        'id': item.id,
-        'name': item.name,
-        'description': item.description,
-        'price': item.price,
-        'category_id': item.category_id,
-        'image_path': item.image_path,
-        'vegetarian': item.vegetarian,
-        'vegan': item.vegan,
-        'spicy': item.spicy,
-        'gluten_free': item.gluten_free,
-        'lactose_free': item.lactose_free,
-        'kid_friendly': item.kid_friendly,
-        'alcohol_free': item.alcohol_free,
-        'contains_alcohol': item.contains_alcohol,
-        'homemade': item.homemade,
-        'sugar_free': item.sugar_free,
-        'recommended': item.recommended
-    })
+    categories = MenuCategory.query.order_by(MenuCategory.order).all()
+    form = FlaskForm()  # Create a form instance for CSRF token
+    return render_template('admin/edit_menu_item.html', item=item, categories=categories, form=form)
 
 @app.route('/admin/menu/edit', methods=['POST'])
 @login_required
 def admin_menu_edit_post():
-    item_id = request.form.get('id')
-    item = MenuItem.query.get_or_404(item_id)
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
+
+    form = FlaskForm()  # Create a form instance for CSRF token
+    if form.validate_on_submit():
+        item_id = request.form.get('id')
+        item = MenuItem.query.get_or_404(item_id)
+        
+        item.name = request.form.get('name')
+        item.description = request.form.get('description')
+        item.price = float(request.form.get('price'))
+        item.category_id = int(request.form.get('category_id'))
+        
+        # Handle image upload if provided
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename:
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                item.image = filename
+        
+        # Update boolean fields
+        item.vegetarian = 'vegetarian' in request.form
+        item.vegan = 'vegan' in request.form
+        item.spicy = 'spicy' in request.form
+        item.gluten_free = 'gluten_free' in request.form
+        item.lactose_free = 'lactose_free' in request.form
+        item.kid_friendly = 'kid_friendly' in request.form
+        item.alcohol_free = 'alcohol_free' in request.form
+        item.contains_alcohol = 'contains_alcohol' in request.form
+        item.homemade = 'homemade' in request.form
+        item.sugar_free = 'sugar_free' in request.form
+        item.recommended = 'recommended' in request.form
+        
+        db.session.commit()
+        flash('Gericht erfolgreich aktualisiert')
+        return redirect(url_for('admin_menu'))
     
-    item.name = request.form['name']
-    item.description = request.form['description']
-    item.price = float(request.form['price'])
-    item.category_id = int(request.form['category'])
-    
-    # Handle image removal
-    remove_image = request.form.get('remove_image') == 'true'
-    if remove_image and item.image_path:
-        # Delete the existing image file
-        try:
-            os.remove(os.path.join(app.root_path, 'static', item.image_path))
-        except OSError:
-            pass  # File might not exist
-        item.image_path = None
-    
-    # Handle new image upload
-    if 'image' in request.files:
-        file = request.files['image']
-        if file and file.filename:
-            # Delete old image if it exists
-            if item.image_path:
-                try:
-                    os.remove(os.path.join(app.root_path, 'static', item.image_path))
-                except OSError:
-                    pass  # File might not exist
-            
-            # Save new image
-            filename = secure_filename(file.filename)
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            new_filename = f"{timestamp}_{filename}"
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
-            file.save(filepath)
-            
-            # Resize and crop the image
-            resize_and_crop_image(filepath)
-            
-            # Update database with new image path
-            item.image_path = os.path.join('uploads', new_filename).replace('\\', '/')
-    
-    # Update other fields
-    item.vegetarian = 'vegetarian' in request.form
-    item.vegan = 'vegan' in request.form
-    item.spicy = 'spicy' in request.form
-    item.gluten_free = 'gluten_free' in request.form
-    item.lactose_free = 'lactose_free' in request.form
-    item.kid_friendly = 'kid_friendly' in request.form
-    item.alcohol_free = 'alcohol_free' in request.form
-    item.contains_alcohol = 'contains_alcohol' in request.form
-    item.homemade = 'homemade' in request.form
-    item.sugar_free = 'sugar_free' in request.form
-    item.recommended = 'recommended' in request.form
-    
-    db.session.commit()
-    flash('Menüpunkt wurde erfolgreich aktualisiert!', 'success')
     return redirect(url_for('admin_menu'))
 
 @app.route('/admin/menu/delete/<int:id>')
@@ -311,47 +279,49 @@ def admin_categories():
     if not current_user.is_authenticated:
         return redirect(url_for('login'))
     categories = MenuCategory.query.order_by(MenuCategory.order).all()
-    return render_template('admin/categories.html', categories=categories)
+    form = FlaskForm()  # Create a form instance for CSRF token
+    return render_template('admin/menu_categories.html', categories=categories, form=form)
 
-@app.route('/admin/categories/add', methods=['POST'])
+@app.route('/admin/category/add', methods=['GET', 'POST'])
 @login_required
 def admin_add_category():
     if not current_user.is_authenticated:
         return redirect(url_for('login'))
-    try:
-        name = request.form.get('name').lower()
+    form = FlaskForm()  # Create a form instance for CSRF token
+    if form.validate_on_submit():
+        name = request.form.get('name')
         display_name = request.form.get('display_name')
-        order = int(request.form.get('order'))
-        is_drink_category = bool(request.form.get('is_drink_category'))
+        order = request.form.get('order', 0)
         
-        category = MenuCategory(
+        # Check if category with this name already exists
+        existing_category = MenuCategory.query.filter_by(name=name).first()
+        if existing_category:
+            flash('Eine Kategorie mit diesem Namen existiert bereits.')
+            return redirect(url_for('admin_categories'))
+        
+        new_category = MenuCategory(
             name=name,
             display_name=display_name,
-            order=order,
-            is_drink_category=is_drink_category
+            order=order
         )
-        
-        db.session.add(category)
+        db.session.add(new_category)
         db.session.commit()
-        flash('Kategorie erfolgreich hinzugefügt', 'success')
-    except Exception as e:
-        flash(f'Fehler beim Hinzufügen der Kategorie: {str(e)}', 'error')
+        flash('Kategorie erfolgreich hinzugefügt.')
+        return redirect(url_for('admin_categories'))
     
-    return redirect(url_for('admin_categories'))
+    return render_template('admin/menu_categories.html', form=form)
 
-@app.route('/admin/categories/delete/<int:id>', methods=['POST'])
+@app.route('/admin/category/delete/<int:id>', methods=['POST'])
 @login_required
 def admin_delete_category(id):
     if not current_user.is_authenticated:
         return redirect(url_for('login'))
-    try:
+    form = FlaskForm()  # Create a form instance for CSRF token
+    if form.validate_on_submit():
         category = MenuCategory.query.get_or_404(id)
         db.session.delete(category)
         db.session.commit()
-        flash('Kategorie erfolgreich gelöscht', 'success')
-    except Exception as e:
-        flash(f'Fehler beim Löschen der Kategorie: {str(e)}', 'error')
-    
+        flash('Kategorie erfolgreich gelöscht.')
     return redirect(url_for('admin_categories'))
 
 @app.route('/admin/hours')
