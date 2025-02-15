@@ -162,6 +162,17 @@ main {
     width: 25px;
 }
 
+/* Award Styles */
+.award-title {
+    color: #000;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.gold-text {
+    color: #D4AF37;
+}
+
 /* Footer */
 footer {
     background-color: var(--dark);
